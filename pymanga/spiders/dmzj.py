@@ -34,6 +34,7 @@ class DmzjSpider(scrapy.Spider):
         """parse a comic page"""
         root_path = settings.DOWNLOAD_STORE
         comic_title = response.xpath('//script/text()').re_first('g_comic_name = "(.+)"')
+        comic_title = comic_title.replace(":", "_").replace("!", "_")
         comic_path = os.path.join(root_path, comic_title)
         # scrape comic item
         l = ItemLoader(item=ComicItem(), response=response)
