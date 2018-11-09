@@ -53,7 +53,7 @@ class DmzjSpider(scrapy.Spider):
         """parse a volume page"""
         comic_path = response.meta["comic_path"]
         comic_title = response.meta["comic_title"]
-        volume_title = response.xpath('//script/text()').re_first('g_chapter_name = "(\w+)"')
+        volume_title = response.xpath('//script/text()').re_first('g_chapter_name = "(.*)"')
         volume_path = os.path.join(comic_path, volume_title)
         # scrape volume item
         l = ItemLoader(item=VolumeItem(), response=response)
