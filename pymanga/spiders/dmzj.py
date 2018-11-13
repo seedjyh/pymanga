@@ -12,19 +12,23 @@ from scrapy.loader import ItemLoader
 
 from pymanga import settings
 from pymanga.utils.js.decrypter import Decrypter
-from pymanga.items import ComicItem, VolumeItem, PictureItem
+from pymanga.items import ComicItem, VolumeItem, PictureItem, NewsItem
 
 
 class DmzjSpider(scrapy.Spider):
     name = 'dmzj'
     allowed_domains = ['dmzj.com']
-    comic_urls = [
-        'https://manhua.dmzj.com/qingzaittaishangweixiao/',
+    all_urls = [
+        'https://news.dmzj.com/article/47995_all.html',
     ]
 
     def start_requests(self):
-        for url in self.comic_urls:
-            yield Request(url=url, callback=self.parse_comic_page)
+        for url in self.all_urls:
+            url_parsed = urllib.parse.urlparse(url)
+            if url_parsed.netloc == 'manhua.dmzj.com':
+                yield Request(url=url, callback=self.parse_comic_page)
+            elif url_parsed.netloc == 'news.dmzj.com':
+                yield Request(url=url, callback=self.parse_news_page)
 
     def parse(self, response):
         """ This method is here only for fixing warning: must implement all abstract methods"""
@@ -80,9 +84,44 @@ class DmzjSpider(scrapy.Spider):
             l.add_value("file_urls", url)
             yield l.load_item()
 
-    def parse_picture_page(self, response):
-        """parse a picture page"""
-        pass
+    def parse_news_page(self, response):
+        url_for_all = response.xpath("//a[contains(text(),'在本页阅读全文')]/@href").extract()
+        if url_for_all:
+            yield Request(url=url_for_all[0], callback=self.parse_news_page_all)
+        else:
+            for v in self.parse_news_page_all(response):
+                yield v
+
+    def parse_news_page_all(self, response):
+        """parse a news page"""
+        root_path = settings.DOWNLOAD_STORE
+        news_title = response.xpath('//h1/text()').extract_first()
+        news_title = news_title.replace(":", "_").replace("!", "_")
+        news_path = os.path.join(root_path, news_title)
+        # scrape news item
+        l = ItemLoader(item=NewsItem(), response=response)
+        l.add_value('root_path', root_path)
+        l.add_value('news_title', news_title)
+        l.add_value('news_path', news_path)
+        l.add_value('url', response.url)
+        yield l.load_item()
+        # more variable
+        comic_path = news_path
+        comic_title = news_title
+        volume_title = ""  # empty means no volume title
+        volume_path = comic_path
+        # scrape picture url
+        pic_url_list = response.xpath("//div[@class='news_content_con']/p[@style='text-align:center']/img/@src").extract()
+        for i in range(len(pic_url_list)):
+            url = pic_url_list[i]
+            l = ItemLoader(item=PictureItem(), response=response)
+            l.add_value("volume_path", volume_path)
+            l.add_value("comic_title", comic_title)
+            l.add_value("volume_title", volume_title)
+            l.add_value("index", i + 1)
+            l.add_value("referer", response.url)
+            l.add_value("file_urls", url)
+            yield l.load_item()
 
 
 if __name__ == "__main__":

@@ -36,4 +36,10 @@ class PictureItem(scrapy.Item):
     referer = scrapy.Field()
     file_urls = scrapy.Field()
     files = scrapy.Field()
-	
+
+
+class NewsItem(scrapy.Item):
+    root_path = scrapy.Field()
+    news_title = scrapy.Field()
+    news_path = scrapy.Field()
+    url = scrapy.Field()
