@@ -82,7 +82,8 @@ class DmzjSpider(scrapy.Spider):
         # pic_count = int(response.xpath("//script/text()").re("g_max_pic_count = (\d+)")[0]) # use less
         # picture page is same as volume page, except '#'. So process image url directly.
         eval_script = response.xpath("//script").re_first("eval\(function.*") # p,a,c,k,e,d
-        pic_url_code_raw = Decrypter.decrypt(eval_script)
+        pic_url_code_raw = Decrypter.decrypt_by_execjs(eval_script)
+        print("=======================================", pic_url_code_raw)
         pic_url_list = re.search("\[(.*)\]", pic_url_code_raw).group(1).split(",")
         for i in range(len(pic_url_list)):
             url = urllib.parse.urljoin("https://images.dmzj.com", re.search("\"(.*)\"", pic_url_list[i]).group(1))

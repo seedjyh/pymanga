@@ -4,6 +4,8 @@
 # Create date: 2018/11/2
 import re
 
+import execjs
+
 
 class Decrypter:
     """
@@ -29,6 +31,14 @@ class Decrypter:
                 break
         return result
 
+    @staticmethod
+    def decrypt_by_execjs(ciphertext):
+        js_code = """
+        function run() {
+            return %s;
+        }
+        """ % ciphertext.replace("eval(function(p,a,c,k,e,d)", "function fun(p,a,c,k,e,d)")[:-1]
+        return execjs.compile(js_code).call("run")
 
 class Dictionary:
     """
