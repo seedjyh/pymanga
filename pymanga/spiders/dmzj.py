@@ -97,9 +97,9 @@ class DmzjSpider(scrapy.Spider):
             yield l.load_item()
 
     def parse_news_page(self, response):
-        url_for_all = response.xpath("//a[contains(text(),'在本页阅读全文')]/@href").extract()
+        url_for_all = response.xpath("//a[contains(text(),'在本页阅读全文')]/@href").extract_first()
         if url_for_all:
-            yield Request(url=url_for_all[0], callback=self.parse_news_page_all)
+            yield Request(url=url_for_all, callback=self.parse_news_page_all)
         else:
             for v in self.parse_news_page_all(response):
                 yield v
@@ -123,7 +123,7 @@ class DmzjSpider(scrapy.Spider):
         volume_title = ""  # empty means no volume title
         volume_path = comic_path
         # scrape picture url
-        pic_url_list = response.xpath("//div[@class='news_content_con']/p[@style='text-align:center']/img/@src").extract()
+        pic_url_list = response.xpath("//div[@class='news_content_con']/p/img/@src").extract()
         for i in range(len(pic_url_list)):
             url = pic_url_list[i]
             l = ItemLoader(item=PictureItem(), response=response)
