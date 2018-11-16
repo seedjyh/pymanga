@@ -19,14 +19,17 @@ class DmzjSpider(scrapy.Spider):
     name = 'dmzj'
     allowed_domains = ['dmzj.com']
     all_urls = [
-        'https://news.dmzj.com/article/47995_all.html',
+        'https://manhua.dmzj.com/morijianglin/13110.shtml',
     ]
 
     def start_requests(self):
         for url in self.all_urls:
             url_parsed = urllib.parse.urlparse(url)
             if url_parsed.netloc == 'manhua.dmzj.com':
-                yield Request(url=url, callback=self.parse_comic_page)
+                if os.path.splitext(url_parsed.path)[1]:
+                    yield Request(url=url, callback=self.parse_volume_page)
+                else:
+                    yield Request(url=url, callback=self.parse_comic_page)
             elif url_parsed.netloc == 'news.dmzj.com':
                 yield Request(url=url, callback=self.parse_news_page)
 
@@ -55,8 +58,9 @@ class DmzjSpider(scrapy.Spider):
 
     def parse_volume_page(self, response):
         """parse a volume page"""
-        comic_path = response.meta["comic_path"]
-        comic_title = response.meta["comic_title"]
+        root_path = settings.DOWNLOAD_STORE
+        comic_title = response.meta.get("comic_title", response.xpath('//script/text()').re_first('g_comic_name = "(.+)"'))
+        comic_path = response.meta.get("comic_path", os.path.join(root_path, comic_title))
         volume_title = response.xpath('//script/text()').re_first('g_chapter_name = "(.*)"')
         volume_path = os.path.join(comic_path, volume_title)
         # scrape volume item
@@ -66,7 +70,13 @@ class DmzjSpider(scrapy.Spider):
         l.add_value('volume_title', volume_title)
         l.add_value('volume_path', volume_path)
         yield l.load_item()
-        # scrape picture url
+        # scrape last volume
+        prev_volume_url = urllib.parse.urljoin(response.url, response.xpath("//a[@id='prev_chapter']/@href").extract_first())
+        yield Request(url=prev_volume_url, callback=self.parse_volume_page)
+        # scrape next volume
+        next_volume_url = urllib.parse.urljoin(response.url, response.xpath("//a[@id='next_chapter']/@href").extract_first())
+        yield Request(url=next_volume_url, callback=self.parse_volume_page)
+        # scrape picture url for current volume
         # pic_count = int(response.xpath("//script/text()").re("g_max_pic_count = (\d+)")[0]) # use less
         # picture page is same as volume page, except '#'. So process image url directly.
         eval_script = response.xpath("//script").re_first("eval\(function.*") # p,a,c,k,e,d
