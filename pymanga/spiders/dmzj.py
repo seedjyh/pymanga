@@ -18,12 +18,14 @@ from pymanga.items import ComicItem, VolumeItem, PictureItem, NewsItem
 class DmzjSpider(scrapy.Spider):
     name = 'dmzj'
     allowed_domains = ['dmzj.com']
-    all_urls = [
-        'https://manhua.dmzj.com/morijianglin/13110.shtml',
-    ]
+    __all_urls = []
+
+    def __init__(self, url=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__all_urls.append(url)
 
     def start_requests(self):
-        for url in self.all_urls:
+        for url in self.__all_urls:
             url_parsed = urllib.parse.urlparse(url)
             if url_parsed.netloc == 'manhua.dmzj.com':
                 if os.path.splitext(url_parsed.path)[1]:
