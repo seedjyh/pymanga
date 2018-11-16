@@ -14,7 +14,12 @@ scrapy crawl dmzj -a url=https://manhua.dmzj.com/mix/
 scrapy crawl dmzj -a url=https://manhua.dmzj.com/mix/24308.shtml
 ```
 
-### directory setting
+### Download from news page
+```bat
+scrapy crawl dmzj -a url=https://news.dmzj.com/article/9718.html
+```
+
+### Directory setting
 
 in file `{spider}\pymanga\settings.py`
 
