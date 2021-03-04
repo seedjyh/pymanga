@@ -79,4 +79,10 @@ Created spider 'wuqimh' using template 'basic' in module:
 1. 在右边窗口（第一个标签页是Style，第二个标签页是Computed）选择ChroPath标签页，选择`Rel XPath`行，内容估计是`//div[@class='book-title']//h1`。左键点击最左边的按钮，从而拷贝内容到剪贴板。
 1. 在scrapy shell命令行里输入`response.xpath("//div[@class='book-title']//h1")`。根据情况，输入`response.xpath("//div[@class='book-title']//h1/text()").extract_first()`可以得到更简洁的结果。
 
+## 故障处理
+
+### 创建爬虫时找不到execjs包
+
+`pip install PyExecJS`
+
 
