@@ -99,3 +99,9 @@ Created spider 'wuqimh' using template 'basic' in module:
 
 执行`scrapy shell <URL>`即可进入交互式界面。
 之后可以直接用诸如`response.xpath("...").extract_first()`之类 python 命令进行测试。
+
+## 实际执行 scrapy
+
+```shell
+scrapy crawl antbyw -a url="https://www.antbyw.com/plugin.php?id=jameson_manhua&a=bofang&kuid=179392&zjid=1358635"
+```

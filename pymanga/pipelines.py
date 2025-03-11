@@ -11,6 +11,7 @@ from scrapy.exceptions import DropItem
 from pymanga import settings
 from pymanga.items import ComicItem, VolumeItem, PictureItem, NewsItem
 from scrapy.pipelines.files import FilesPipeline
+from PIL import Image
 
 
 class WriteFilePipeline(object):
@@ -62,10 +63,15 @@ class WriteFilePipeline(object):
             new_file_name = "_".join([item["comic_title"][0], item["volume_title"][0], str(item["index"][0]).zfill(6) + extension, ])
         else:
             new_file_name = "_".join([item["comic_title"][0], str(item["index"][0]).zfill(6) + extension, ])
-        new_path = os.path.join(item["volume_path"][0], new_file_name)
+        new_path = self.replace_extension_with_png(os.path.join(item["volume_path"][0], new_file_name))
         print("==old_path=", old_path)
         print("==new_path=", new_path)
-        shutil.move(old_path, new_path)
+        if old_path.endswith(".webp"):
+            self.move_converse_file(old_path, new_path)
+        elif old_path.endswith(".png"):
+            shutil.move(old_path, new_path)
+        else:
+            raise "Unknown file type:" + old_path
 
     def write_url_file(self, url, root_path):
         file_path = os.path.join(root_path, "url.txt")
@@ -81,6 +87,20 @@ class WriteFilePipeline(object):
             os.makedirs(news_path)
         self.write_url_file(item["url"][0], news_path)
         return item
+
+    def replace_extension_with_png(self, path):
+        # 分离文件名和扩展名
+        file_name, _ = os.path.splitext(path)
+        # 生成新的路径，扩展名替换为.png
+        new_path = file_name + '.png'
+        return new_path
+
+    def move_converse_file(self, old_path, new_path):
+        print("move_converse_file: old_path=", old_path, "new_path=", new_path)
+        img = Image.open(old_path)
+        img.save(new_path, 'PNG')
+        print("move_converse_file.DONE! old_path=", old_path, "new_path=", new_path)
+        os.remove(old_path)
 
 
 class MyFilesPipeline(FilesPipeline):
