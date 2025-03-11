@@ -85,4 +85,17 @@ Created spider 'wuqimh' using template 'basic' in module:
 
 `pip install PyExecJS`
 
+## 使用 PyCharm 调试
 
+1. 打开 Configuration
+2. 新建一个 Python
+3. 右侧 Script path 选择之前安装的 Scripy.exe 完整路径（注意后缀名要带上）
+4. 右侧 Parameters 内容是`crawl antbyw -a url="https://www.antbyw.com/plugin.php?id=jameson_manhua&a=bofang&kuid=179392"`
+5. 右侧 Python interpreter 选择安装 scrapy 时使用的 python。
+6. 右侧 Working directory 选择 scrapy.cfg 所在目录（只要到目录这一级）
+7. 测试：执行后的开头，应该是这样的：`C:\Users\jyh\AppData\Local\Programs\Python\Python312\python.exe C:/Users/jyh/AppData/Local/Programs/Python/Python312/Scripts/scrapy.exe crawl antbyw -a url=https://www.antbyw.com/plugin.php?id=jameson_manhua&a=bofang&kuid=179392`
+
+## 测试对网页进行 python scrapy 分析的命令
+
+执行`scrapy shell <URL>`即可进入交互式界面。
+之后可以直接用诸如`response.xpath("...").extract_first()`之类 python 命令进行测试。

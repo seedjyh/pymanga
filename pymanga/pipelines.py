@@ -17,10 +17,13 @@ class WriteFilePipeline(object):
 
     def process_item(self, item, spider):
         if isinstance(item, ComicItem):
+            print("ComicItem=", item)
             return self.process_comic_item(item, spider)
         elif isinstance(item, VolumeItem):
+            print("VolumeItem=", item)
             return self.process_volume_item(item, spider)
         elif isinstance(item, PictureItem):
+            print("PictureItem=", item)
             return self.process_picture_item(item, spider)
         elif isinstance(item, NewsItem):
             return self.process_news_item(item, spider)
@@ -48,6 +51,10 @@ class WriteFilePipeline(object):
         return item
 
     def process_picture_item(self, item, spider):
+        if len(item["files"]) == 0:
+            return
+        print("====================================================")
+        print("==process_picture_item, item.files=", item["files"][0]["path"])
         """Rename and move file downloaded."""
         old_path = os.path.join(settings.FILES_STORE, item["files"][0]["path"])
         _, extension = os.path.splitext(item["files"][0]["path"])
@@ -56,6 +63,8 @@ class WriteFilePipeline(object):
         else:
             new_file_name = "_".join([item["comic_title"][0], str(item["index"][0]).zfill(6) + extension, ])
         new_path = os.path.join(item["volume_path"][0], new_file_name)
+        print("==old_path=", old_path)
+        print("==new_path=", new_path)
         shutil.move(old_path, new_path)
 
     def write_url_file(self, url, root_path):
@@ -77,6 +86,7 @@ class WriteFilePipeline(object):
 class MyFilesPipeline(FilesPipeline):
 
     def get_media_requests(self, item, info):
+        print("MyFilesPipeline.get_media_requests, item=", item, ", info=", info)
         request_list = super().get_media_requests(item, info)
         for request in request_list:
             request.headers.appendlist("Referer", item["referer"])
