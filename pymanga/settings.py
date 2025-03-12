@@ -92,7 +92,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # Enable FilesPipeline
-FILES_STORE = 'D:\\tmp'
+FILES_STORE = 'G:\\tmp'
 
 # Download
-DOWNLOAD_STORE = "D:\\manga"
+DOWNLOAD_STORE = "G:\\manga"
