@@ -11,7 +11,7 @@ from pymanga.items import ComicItem, VolumeItem, PictureItem
 
 class AntbywSpider(scrapy.Spider):
     name = "antbyw"
-    allowed_domains = ["antbyw.com"]
+    allowed_domains = ["antbyw.com", "v2merge.cn"]
     start_urls = ["https://antbyw.com"]
     __all_urls = []
 
