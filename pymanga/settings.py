@@ -65,7 +65,8 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'pymanga.pipelines.MyFilesPipeline': 1,
+    'pymanga.pipelines.FilterDownloadedPipeline': 1,
+    'pymanga.pipelines.MyFilesPipeline': 10,
 #    'pymanga.pipelines.PymangaPipeline': 300,
     'pymanga.pipelines.WriteFilePipeline': 301,
 }

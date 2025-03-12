@@ -79,7 +79,7 @@ class WriteFilePipeline(object):
     def write_url_file(self, url, root_path):
         file_path = os.path.join(root_path, "url.txt")
         with open(file_path, "a") as f:
-            f.write("%s|%s\n" % (time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())), url))
+            f.write("%s|%s\n" % (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())), url))
 
     def process_news_item(self, item, spider):
         """Create a directory for this news if it doesn't exist yet."""
@@ -90,6 +90,7 @@ class WriteFilePipeline(object):
             os.makedirs(news_path)
         self.write_url_file(item["url"][0], news_path)
         return item
+
     #
     # def replace_extension_with_png(self, path):
     #     # 分离文件名和扩展名
@@ -114,3 +115,13 @@ class MyFilesPipeline(FilesPipeline):
         for request in request_list:
             request.headers.appendlist("Referer", item["referer"])
             yield request
+
+
+class FilterDownloadedPipeline(object):
+
+    def process_item(self, item, spider):
+        if isinstance(item, PictureItem):
+            new_file_path = item.get_new_path(extension=".png")
+            if os.path.exists(new_file_path):
+                raise DropItem("drop existed file, path %s" % new_file_path)
+        return item
