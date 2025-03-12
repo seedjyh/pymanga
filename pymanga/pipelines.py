@@ -18,15 +18,16 @@ class WriteFilePipeline(object):
 
     def process_item(self, item, spider):
         if isinstance(item, ComicItem):
-            print("ComicItem=", item)
+            print("WriteFilePipeline.process_item.ComicItem=", item)
             return self.process_comic_item(item, spider)
         elif isinstance(item, VolumeItem):
-            print("VolumeItem=", item)
+            print("WriteFilePipeline.process_item.VolumeItem=", item)
             return self.process_volume_item(item, spider)
         elif isinstance(item, PictureItem):
-            print("PictureItem=", item)
+            print("WriteFilePipeline.process_item.PictureItem=", item)
             return self.process_picture_item(item, spider)
         elif isinstance(item, NewsItem):
+            print("WriteFilePipeline.process_item.NewsItem=", item)
             return self.process_news_item(item, spider)
         else:
             raise DropItem("Unhandled item: %s" % item)
@@ -57,13 +58,15 @@ class WriteFilePipeline(object):
         print("====================================================")
         print("==process_picture_item, item.files=", item["files"][0]["path"])
         """Rename and move file downloaded."""
-        old_path = os.path.join(settings.FILES_STORE, item["files"][0]["path"])
-        _, extension = os.path.splitext(item["files"][0]["path"])
-        if item["volume_title"][0]:
-            new_file_name = "_".join([item["comic_title"][0], item["volume_title"][0], str(item["index"][0]).zfill(6) + extension, ])
-        else:
-            new_file_name = "_".join([item["comic_title"][0], str(item["index"][0]).zfill(6) + extension, ])
-        new_path = self.replace_extension_with_png(os.path.join(item["volume_path"][0], new_file_name))
+        old_path = item.get_old_path(settings.FILES_STORE)
+        # old_path = os.path.join(settings.FILES_STORE, item["files"][0]["path"])
+        new_path = item.get_new_path(extension=".png")
+        # _, extension = os.path.splitext(item["files"][0]["path"])
+        # if item["volume_title"][0]:
+        #     new_file_name = "_".join([item["comic_title"][0], item["volume_title"][0], str(item["index"][0]).zfill(6) + extension, ])
+        # else:
+        #     new_file_name = "_".join([item["comic_title"][0], str(item["index"][0]).zfill(6) + extension, ])
+        # new_path = self.replace_extension_with_png(os.path.join(item["volume_path"][0], new_file_name))
         print("==old_path=", old_path)
         print("==new_path=", new_path)
         if old_path.endswith(".webp"):
@@ -71,7 +74,7 @@ class WriteFilePipeline(object):
         elif old_path.endswith(".png"):
             shutil.move(old_path, new_path)
         else:
-            raise "Unknown file type:" + old_path
+            raise DropItem("Unknown file type: %s" % old_path)
 
     def write_url_file(self, url, root_path):
         file_path = os.path.join(root_path, "url.txt")
@@ -87,13 +90,13 @@ class WriteFilePipeline(object):
             os.makedirs(news_path)
         self.write_url_file(item["url"][0], news_path)
         return item
-
-    def replace_extension_with_png(self, path):
-        # 分离文件名和扩展名
-        file_name, _ = os.path.splitext(path)
-        # 生成新的路径，扩展名替换为.png
-        new_path = file_name + '.png'
-        return new_path
+    #
+    # def replace_extension_with_png(self, path):
+    #     # 分离文件名和扩展名
+    #     file_name, _ = os.path.splitext(path)
+    #     # 生成新的路径，扩展名替换为.png
+    #     new_path = file_name + '.png'
+    #     return new_path
 
     def move_converse_file(self, old_path, new_path):
         print("move_converse_file: old_path=", old_path, "new_path=", new_path)
@@ -106,7 +109,7 @@ class WriteFilePipeline(object):
 class MyFilesPipeline(FilesPipeline):
 
     def get_media_requests(self, item, info):
-        print("MyFilesPipeline.get_media_requests, item=", item, ", info=", info)
+        print("MyFilesPipeline.get_media_requests, itemType=", type(item), ", item=", item, ", info=", info)
         request_list = super().get_media_requests(item, info)
         for request in request_list:
             request.headers.appendlist("Referer", item["referer"])
